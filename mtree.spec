@@ -1,7 +1,7 @@
 Name:           mtree-netbsd
 %global         buildtag        1.0.0
 Version:        %{buildtag}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        NetBSD mtree utility for file hierarchy verification
 
 License:        BSD
@@ -16,6 +16,10 @@ BuildRequires:  libtool
 BuildRequires:  libnbcompat-devel
 
 Requires:       libnbcompat
+
+# This package contains mtree.5, we do not want to conflict with
+# Maybe we could use this library in the future?
+Requires:       libarchive
 
 
 %description
@@ -35,18 +39,27 @@ export CFLAGS="$CFLAGS -Wno-error=format-security"
 %install
 %make_install
 
-# Remove libtool archives
-find %{buildroot} -name '*.la' -delete
+# Remove unwanted files
 rm -rf %{buildroot}%{_docdir}/mtree-netbsd
+ls -l %{buildroot}%{_mandir}/man5/mtree.5
+ls -l %{buildroot}%{_mandir}
+
+rm -f %{buildroot}%{_mandir}/man5/mtree.5
+gzip -9 %{buildroot}%{_mandir}/man8/mtree.8
 
 %files
 %doc README
 %{_bindir}/mtree
 %{_mandir}/man8/mtree.8*
-%{_mandir}/man5/mtree.5*
+# mtree.5 intentionally disabled due to conflicts with existing mtree packages (man page conflicts).
+# Keeping the packaging line commented out to avoid file conflicts on install.
 %{_docdir}/packages/mtree/*
 
 %changelog
-* Fri Jan 02 2026 Package Maintainer <maintainer@example.com> - 1.0.0-1
+
+* Tue Jan 06 2026 Package Maintainer <jonny@jonny.eng.br> - 1.0.0-2
+- Disable packaging of mtree.5 (man5) to avoid conflicts with other mtree
+packages.
+* Fri Jan 02 2026 Package Maintainer <jonny@jonny.eng.br> - 1.0.0-1
 - Initial COPR package for mtree-netbsd
 - Based on upstream release tag 1.0.0
